@@ -6,6 +6,9 @@ var quizController=require("../controllers/quiz_controller");
 router.get('/', function(req, res, next) {
   res.render('index');
 });
+// Autoload de rutas que esen :quizId
+router.param('quizId', quizController.load);
+
 router.get('/quizzes', quizController.index);
 router.get('/quizzes/:quizId(\\d+)', quizController.show);
 router.get('/quizzes/:quizId(\\d+)/check', quizController.check);
