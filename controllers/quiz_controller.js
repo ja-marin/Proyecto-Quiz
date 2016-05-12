@@ -14,7 +14,7 @@ exports.load = function(req,res,next,quizId){
 
 exports.index=function(req,res,next){
 	if(req.query.search){
-		models.Quiz.findAll({where: {question: {$like: "%"+req.query.search+"%" }}})
+		models.Quiz.findAll({where: {question: {$like: "%"+req.query.search+"%" }},order: [['question', 'ASC']] })
 		.then(function(quizzes){
 			if(quizzes){	
 				res.render('quizzes/index.ejs',{quizzes:quizzes});
