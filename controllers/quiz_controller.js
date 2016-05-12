@@ -64,4 +64,19 @@ exports.check=function(req,res,next){
 	}).catch(function(error){next(error);});
 	
 };
+exports.new=function(req,res,next){
+	var quiz = models.Quiz.build({question: "", answer: ""});
+	res.render('quizzes/new', {quiz: quiz});
+};
 
+exports.create=function(req,res,next){
+	var quiz= models.Quiz.build({question: req.body.quiz.question,
+								answer: req.body.quiz.answer	});
+
+	quiz.save({fields: ["question", "answer"]})
+	.then(function(quiz){
+		res.redirect('/quizzes');
+	}).catch(function(error){
+		next(error);
+	});
+};
