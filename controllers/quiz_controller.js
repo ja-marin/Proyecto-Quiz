@@ -23,7 +23,7 @@ exports.index=function(req,res,next){
 			else{throw new Error('No existe ese quiz en la BBDD');}
 		}).catch(function(error){next(error);});
 	}else{
-		models.Quiz.findAll()
+		models.Quiz.findAll({order: [['question', 'ASC']]})
 		.then(function(quizzzes){
 				res.render('quizzes/index.ejs', {quizzes: quizzzes});
 			}).catch(function(error){next(error);});
@@ -86,6 +86,31 @@ exports.create=function(req,res,next){
 		res.render('quizzes/new', {quiz:quiz});
 	}).catch(function(error){
 		req.flash('error','Error al crear un Quiz: '+error.message);
+		next(error);
+	});
+};
+
+exports.edit=function(req,res,next){
+	var quiz=req.quiz;
+	res.render('quizzes/edit', {quiz:quiz});
+};
+
+exports.update=function(req,res,next){
+	req.quiz.question = req.body.quiz.question;
+	req.quiz.answer = req.body.quiz.answer;
+
+	req.quiz.save({fields: ["question", "answer"]})
+	.then(function(quiz){
+		req.flash('success', 'Quiz editado con éxito.');
+		res.redirect('/quizzes');
+	}).catch(Sequelize.ValidationError,function(error){
+		req.flash('error', 'Errores en el formulario');
+		for (var i in error.errors){
+			req.flash('error', error.errors[i].value);
+		};
+		res.render('quizzes/edit', {quiz: req.quiz});
+	}).catch(function(error){
+		req.flash('error', 'Error al editar el Quiz: '+error.message);
 		next(error);
 	});
 };
