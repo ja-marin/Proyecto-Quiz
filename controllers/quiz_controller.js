@@ -14,38 +14,58 @@ exports.load = function(req,res,next,quizId){
 };
 
 exports.index=function(req,res,next){
-	if(req.query.search){
-		models.Quiz.findAll({where: {question: {$like: "%"+req.query.search+"%" }},order: [['question', 'ASC']] })
+	var format = req.params.format || 'html';
+	if(format === 'json'){
+		models.Quiz.findAll()
 		.then(function(quizzes){
-			if(quizzes){	
-				res.render('quizzes/index.ejs',{quizzes:quizzes});
-			}
-			else{throw new Error('No existe ese quiz en la BBDD');}
-		}).catch(function(error){next(error);});
-	}else{
-		models.Quiz.findAll({order: [['question', 'ASC']]})
-		.then(function(quizzzes){
-				res.render('quizzes/index.ejs', {quizzes: quizzzes});
-			}).catch(function(error){next(error);});
+			res.send(JSON.stringify(quizzes) + '');
+		}).catch(function(error){
+			next(error);
+		});
 	}
+	else if(format === 'html'){
+		if(req.query.search){
+			models.Quiz.findAll({where: {question: {$like: "%"+req.query.search+"%" }},order: [['question', 'ASC']] })
+			.then(function(quizzes){
+				if(quizzes){	
+					res.render('quizzes/index.ejs',{quizzes:quizzes});
+				}
+				else{throw new Error('No existe ese quiz en la BBDD');}
+			}).catch(function(error){next(error);});
+		}else{
+			models.Quiz.findAll({order: [['question', 'ASC']]})
+			.then(function(quizzzes){
+					res.render('quizzes/index.ejs', {quizzes: quizzzes});
+				}).catch(function(error){next(error);});
+		}
+	}
+	else {
+		res.send('Formato erróneo')
+	}		
 	
 };
 exports.show=function(req,res,next){
-	models
-	.Quiz
-	.findById(req.params.quizId)
-	.then(function(quiz){
-		if(quiz){
-			var answer=req.query.answer || '';
-			res.render('quizzes/show', {quiz: req.quiz, answer: answer});
-		}
-		else{
-			throw new Error('No existe ese quiz en la BBDD');
-		}
-	}).catch(function(error){
-		next(error);
-	});
-	
+	var format = req.params.format || 'html';
+	if(format==='json'){
+		res.send(JSON.stringify(req.quiz) + '');
+	}
+	else if(format==='html'){
+		models
+		.Quiz
+		.findById(req.params.quizId)
+		.then(function(quiz){
+			if(quiz){
+				var answer=req.query.answer || '';
+				res.render('quizzes/show', {quiz: req.quiz, answer: answer});
+			}
+			else{
+				throw new Error('No existe ese quiz en la BBDD');
+			}
+		}).catch(function(error){
+			next(error);
+		});
+	}
+	else{res.send('Formato erróneo');}
 };
 //GET /check
 
